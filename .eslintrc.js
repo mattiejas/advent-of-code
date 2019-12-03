@@ -18,5 +18,6 @@ module.exports = {
     'arrow-parens': 0,
     'no-console': 0,
     'object-curly-newline': 0,
+    'wrap-iife': ['error', 'inside'],
   },
 };
