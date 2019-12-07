@@ -5,6 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "kotlin",
+      "request": "launch",
+      "name": "Day 6 - Part 1",
+      "projectRoot": "${workspaceFolder}",
+      "mainClass": "${file}"
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "Launch Program",
