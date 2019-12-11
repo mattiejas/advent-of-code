@@ -1,5 +1,5 @@
 class Day07 : Day {
-    val input = Utils().readFile("2019/07/input")[0]
+    val input = Utils.readFile("2019/07/input")[0]
 
     private fun findMaxOutput(settingsRange: IntRange = 0..4): Int {
         val outputs = mutableListOf<Int>()

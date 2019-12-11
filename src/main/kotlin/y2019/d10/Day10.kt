@@ -4,7 +4,7 @@ import Day
 import Utils
 
 class Day10 : Day {
-    private val input = Utils().readFile("2019/10/input")
+    private val input = Utils.readFile("2019/10/input")
     private val field = AsteroidField(input)
 
     override fun partOne() {

@@ -1,6 +1,6 @@
 import kotlin.math.atan2
 
-class Vector<T : Number>(val x: T, val y: T) {
+class Vector<T : Number>(var x: T, var y: T) {
     fun angle(other: Vector<T>): Double {
         return atan2(other.x.toDouble() - this.x.toDouble(), other.y.toDouble() - this.y.toDouble())
     }

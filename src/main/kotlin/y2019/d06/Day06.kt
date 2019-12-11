@@ -1,7 +1,7 @@
 class Planet(val name: String, val orbits: String)
 
 class Day06 : Day {
-    private val planets = Utils().readFile("2019/06/input")
+    private val planets = Utils.readFile("2019/06/input")
         .map { p -> p.split(')') }
         .map { p -> Planet(p[1], p[0]) }
         .groupBy { it.name }

@@ -1,5 +1,5 @@
 class Day08 : Day {
-    private val data = Utils().readFile("2019/08/input")[0]
+    private val data = Utils.readFile("2019/08/input")[0]
         .toCharArray()
         .map { Integer.parseInt(it.toString()) }
 
