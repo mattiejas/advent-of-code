@@ -3,9 +3,5 @@ node_modules
 out/
 *.iml
 .DS_STORE
-
-gradle/
-.gradle/
-gradlew
-gradlew.bat
 build/
+.gradle/
