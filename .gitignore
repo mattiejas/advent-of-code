@@ -4,3 +4,8 @@ out/
 *.iml
 .DS_STORE
 
+gradle/
+.gradle/
+gradlew
+gradlew.bat
+build/
