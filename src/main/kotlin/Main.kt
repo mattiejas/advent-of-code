@@ -1,5 +1,6 @@
 import y2019.d10.Day10
 import y2019.d11.Day11
+import y2019.d12.Day12
 
 fun main() {
 //    val d6: Day = Day06()
@@ -22,7 +23,11 @@ fun main() {
 //    d10.partOne()
 //    d10.partTwo()
 
-    val d11: Day = Day11()
-    d11.partOne()
-    d11.partTwo()
+//    val d11: Day = Day11()
+//    d11.partOne()
+//    d11.partTwo()
+
+    val d12: Day = Day12()
+//    d12.partOne()
+    d12.partTwo()
 }
