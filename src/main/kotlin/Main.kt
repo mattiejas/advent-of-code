@@ -28,6 +28,6 @@ fun main() {
 //    d11.partTwo()
 
     val d12: Day = Day12()
-//    d12.partOne()
+    d12.partOne()
     d12.partTwo()
 }
