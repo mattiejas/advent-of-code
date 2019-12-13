@@ -6,6 +6,8 @@ open class IntCodeComputer(tokens: String) {
     private var _paused = false
     private var _base: Long = 0
 
+    private var _triggerBeforeInput = true
+
     init {
         ops = parseOps(tokens).toMutableMap()
     }
@@ -55,9 +57,11 @@ open class IntCodeComputer(tokens: String) {
         return input.toLong()
     }
 
+    open fun beforeInput() {}
+
     open fun onHalt() {}
 
-    private fun handleNext(): Boolean {
+    fun handleNext(): Boolean {
         val op = get(ops, _position)
         when (op.code) {
             1 -> {
@@ -75,9 +79,16 @@ open class IntCodeComputer(tokens: String) {
                 return true
             }
             3 -> {
+                if (_triggerBeforeInput) {
+                    beforeInput()
+                    _triggerBeforeInput = false
+                    return true
+                }
+
                 val pos = getPosition(_position + 1, op.modes[0])
                 ops[pos] = onInput()
                 _position += 2
+                _triggerBeforeInput = true
                 return true
             }
             4 -> {
@@ -133,5 +144,9 @@ open class IntCodeComputer(tokens: String) {
 
     fun pause() {
         _paused = true
+    }
+
+    fun paused(): Boolean {
+        return _paused
     }
 }

@@ -7,6 +7,7 @@ class Day13 : Day {
 
     override fun partOne() {
         Arcade(input).run()
+//        ArcadeRunner.run(Arcade(input))
     }
 
     @ExperimentalStdlibApi
@@ -14,8 +15,6 @@ class Day13 : Day {
         val input2 = input.toCharArray()
         input2[0] = '2'
 
-        Arcade(input2.concatToString()).apply {
-            run()
-        }
+        ArcadeRunner.run(Arcade(input2.concatToString()))
     }
 }
