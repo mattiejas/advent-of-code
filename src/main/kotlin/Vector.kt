@@ -64,6 +64,15 @@ class Vector3<T : Number>(var x: T, var y: T, var z: T) {
         )
     }
 
+    operator fun get(id: Int): T {
+        return when(id) {
+            0 -> x
+            1 -> y
+            2 -> z
+            else -> error("Does not exist on a Vector3")
+        }
+    }
+
     fun magnitude(): Double {
         return (x.toDouble() * x.toDouble()) + (y.toDouble() * y.toDouble()) + (z.toDouble() * z.toDouble())
     }

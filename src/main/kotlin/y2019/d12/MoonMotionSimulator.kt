@@ -2,10 +2,11 @@ package y2019.d12
 
 import Vector3
 import java.security.MessageDigest
+import javax.xml.bind.DatatypeConverter
 import kotlin.math.abs
 
 
-class Moon(
+data class Moon(
     var id: Int = 0,
     var position: Vector3<Double>,
     var velocity: Vector3<Double> = Vector3(0.0, 0.0, 0.0)
@@ -15,10 +16,23 @@ class Moon(
     }
 
     fun hash(): String {
-        val str = this.id.toString() +this.position.toString() + this.velocity.toString()
-        val md = MessageDigest.getInstance("SHA-256")
-        val digest = md.digest(str.toByteArray())
-        return digest.fold("", { str, it -> str + "%02x".format(it) })
+        val str = this.id.toString() + this.position.toString() + this.velocity.toString()
+
+        val md = MessageDigest.getInstance("MD5")
+        md.update(str.toByteArray())
+        val digest = md.digest()
+        return DatatypeConverter.printHexBinary(digest).toUpperCase()
+
+//        val md = MessageDigest.getInstance("SHA-256")
+//        val digest = md.digest(str.toByteArray())
+//        return digest.fold("", { str, it -> str + "%02x".format(it) })
+    }
+
+    override fun hashCode(): Int {
+        var result = id
+        result = 31 * result + position.hashCode()
+        result = 31 * result + velocity.hashCode()
+        return result
     }
 }
 
@@ -29,11 +43,12 @@ class MoonMotionSimulator(moons: List<Moon>) {
     private var time: Long = 0
 
     private fun step(): String {
+        time++
+
         updateGravity()
         updatePositions()
         updateEnergy()
 
-        time++
         return hashState()
     }
 
@@ -46,19 +61,35 @@ class MoonMotionSimulator(moons: List<Moon>) {
         return _energy.map { it.value }.sum()
     }
 
+    private fun areMoonsEqualOnAxis(moon1: Moon, moon2: Moon, axis: Int) =
+        moon1.position[axis] == moon2.position[axis] && moon1.velocity[axis] == moon2.velocity[axis]
+
+
+    private fun areMoonsEqualOnAxis(moons1: List<Moon>, moons2: List<Moon>, axis: Int): Boolean {
+        return moons1.withIndex().map {
+            areMoonsEqualOnAxis(
+                it.value,
+                moons2[it.index],
+                axis
+            )
+        }.filter { it }.size == moons1.size
+    }
+
     fun simulateUntilSame(): Long {
-        var hash: String
+        val initial = _moons.map { it.copy() }
+        var x: Long = 0
+        var y: Long = 0
+        var z: Long = 0
 
-        do {
-            if (time == 20891.toLong()) {
-                val pause = true
-            }
-            hash = step()
-            _history.add(hash)
-        } while (_history.count { it == hash } == 1)
+        while (x == 0L || y == 0L || z == 0L) {
+            step()
 
-        val lastOccurence = _history.withIndex().find { it.value == hash }!!.index
-        return time
+            if (x == 0L && areMoonsEqualOnAxis(initial, _moons, 0)) x = time
+            if (y == 0L && areMoonsEqualOnAxis(initial, _moons, 1)) y = time
+            if (z == 0L && areMoonsEqualOnAxis(initial, _moons, 2)) z = time
+        }
+
+        return Utils.lcm(x, y, z)
     }
 
     private fun updateEnergy() {
