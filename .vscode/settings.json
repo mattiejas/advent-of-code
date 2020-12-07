@@ -1,3 +1,4 @@
 {
-    "jupyter.jupyterServerType": "local"
+    "jupyter.jupyterServerType": "local",
+    "python.pythonPath": "C:\\Users\\MatthiasA\\.virtualenvs\\advent-of-code-cAlOoTWa\\Scripts\\python.exe"
 }
