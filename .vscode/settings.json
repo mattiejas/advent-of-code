@@ -1,4 +1,7 @@
 {
     "jupyter.jupyterServerType": "local",
-    "python.pythonPath": "C:\\Users\\MatthiasA\\.virtualenvs\\advent-of-code-cAlOoTWa\\Scripts\\python.exe"
+    "python.pythonPath": "C:\\Users\\MatthiasA\\.virtualenvs\\advent-of-code-cAlOoTWa\\Scripts\\python.exe",
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true
 }

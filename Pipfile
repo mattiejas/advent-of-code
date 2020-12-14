@@ -9,6 +9,7 @@ numpy = "*"
 tensorflow = "*"
 tensorflow-gpu = "*"
 scikit-learn = "*"
+flake8 = "*"
 
 [dev-packages]
 
