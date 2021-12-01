@@ -54,8 +54,9 @@ async function main() {
     const { day } = args;
     const { part } = args;
 
-    const { default: Solution } = await import(`./src/d${day.toString().padStart(2, '0')}`);
-    const result = new Solution().run(part === 1 ? Part.ONE : Part.TWO);
+    const name = `d${day.toString().padStart(2, '0')}`;
+    const { default: Solution } = await import(`./solutions/${name}`);
+    const result = new Solution(name).run(part === 1 ? Part.ONE : Part.TWO);
 
     console.log(result);
   }

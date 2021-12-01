@@ -1,9 +1,14 @@
+import fs from 'fs';
+import path from 'path';
+
 export enum Part {
   ONE,
   TWO,
 }
 
 export abstract class Day {
+  public constructor(public name: string) {}
+
   public abstract partOne(): string;
   public abstract partTwo(): string;
 
@@ -16,5 +21,9 @@ export abstract class Day {
       default:
         throw new Error('Invalid part');
     }
+  }
+
+  protected input(): string {
+    return fs.readFileSync(path.join(__dirname, 'solutions', 'inputs', this.name), 'utf8');
   }
 }

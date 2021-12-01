@@ -2,7 +2,9 @@ import { Day } from '../Day';
 
 export default class Day1 extends Day {
   public partOne(): string {
-    throw new Error('Method not implemented123123.');
+    const input = this.input();
+    console.log(input);
+    return input;
   }
 
   public partTwo(): string {
