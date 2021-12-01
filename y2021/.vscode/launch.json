@@ -3,7 +3,7 @@
     {
       "name": "Launch Program",
       "program": "${workspaceFolder}/dist/index.js",
-      "args": ["-d", "1", "-p", "1"],
+      "args": ["-d", "1", "-p", "2"],
       "request": "launch",
       "skipFiles": ["<node_internals>/**"],
       "type": "pwa-node",

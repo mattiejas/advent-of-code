@@ -23,7 +23,7 @@ export abstract class Day {
     }
   }
 
-  protected input(): string {
-    return fs.readFileSync(path.join(__dirname, 'solutions', 'inputs', this.name), 'utf8');
+  protected input(test = false): string {
+    return fs.readFileSync(path.join(__dirname, 'solutions', 'inputs', `${this.name}${test ? '.test' : ''}`), 'utf8');
   }
 }
