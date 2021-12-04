@@ -17,6 +17,9 @@
     "max-classes-per-file": "off",
     "class-methods-use-this": "off",
     "no-underscore-dangle": "off",
-    "import/prefer-default-export": "off"
+    "import/prefer-default-export": "off",
+    "max-len": "off",
+    "no-constant-condition": "off",
+    "@typescript-eslint/no-loop-func": "off"
   }
 }
