@@ -1,13 +1,13 @@
 use crate::day::Day;
 
 mod day;
-mod day04;
+mod day06;
 mod utils;
 
 fn main() {
     let now = std::time::Instant::now();
 
-    println!("{}", day04::Day04::solve_part2());
+    println!("{}", day06::Day06::solve_part2());
 
     println!(
         "ran for {}ms",
