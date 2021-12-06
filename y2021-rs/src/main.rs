@@ -9,5 +9,8 @@ fn main() {
 
     println!("{}", day06::Day06::solve_part2());
 
-    println!("ran for {}ms", now.elapsed().as_millis());
+    println!(
+        "ran for {}ms",
+        (now.elapsed().as_nanos()) as f32 / 1000000f32
+    );
 }
