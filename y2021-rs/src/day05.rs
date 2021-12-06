@@ -20,12 +20,6 @@ impl std::ops::Sub for Point {
     }
 }
 
-// impl Ord for Point {
-//     fn cmp(&self, other: &Point) -> std::cmp::Ordering {
-//         self.x.cmp(&other.x).then(self.y.cmp(&other.y))
-//     }
-// }
-
 #[derive(Copy, Clone)]
 struct LineSegment {
     start: Point,
