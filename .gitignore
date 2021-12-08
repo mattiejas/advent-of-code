@@ -5,3 +5,4 @@ out/
 .DS_STORE
 build/
 .gradle/
+*.pyc

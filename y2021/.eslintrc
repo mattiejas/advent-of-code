@@ -1,0 +1,25 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "extends": [
+    "airbnb-base",
+    "airbnb-typescript/base",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "rules": {
+    "no-console": "off",
+    "max-classes-per-file": "off",
+    "class-methods-use-this": "off",
+    "no-underscore-dangle": "off",
+    "import/prefer-default-export": "off",
+    "max-len": "off",
+    "no-constant-condition": "off",
+    "@typescript-eslint/no-loop-func": "off"
+  }
+}
