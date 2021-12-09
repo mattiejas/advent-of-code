@@ -18,55 +18,15 @@ fn get_heightmap() -> Vec<Vec<i32>> {
 
 // check if point is local minima
 fn is_local_minima(heightmap: &Vec<Vec<i32>>, x: usize, y: usize) -> bool {
-    let mut local_minima: bool = true;
+    let neighbours = get_neighbours(heightmap, x, y);
 
-    match (x, y) {
-        (0, 0) => {
-            local_minima =
-                heightmap[y][x] < heightmap[y][x + 1] && heightmap[y][x] < heightmap[y + 1][x];
-        }
-        (0, _) => {
-            if y == heightmap.len() - 1 {
-                local_minima =
-                    heightmap[y][x] < heightmap[y][x + 1] && heightmap[y][x] < heightmap[y - 1][x];
-            } else {
-                local_minima = heightmap[y][x] < heightmap[y][x + 1]
-                    && heightmap[y][x] < heightmap[y + 1][x]
-                    && heightmap[y][x] < heightmap[y - 1][x];
-            }
-        }
-        (_, 0) => {
-            if x == heightmap[y].len() - 1 {
-                local_minima =
-                    heightmap[y][x] < heightmap[y + 1][x] && heightmap[y][x] < heightmap[y][x - 1];
-            } else {
-                local_minima = heightmap[y][x] < heightmap[y][x - 1]
-                    && heightmap[y][x] < heightmap[y][x + 1]
-                    && heightmap[y][x] < heightmap[y + 1][x];
-            }
-        }
-        (_, _) => {
-            if x == heightmap[y].len() - 1 && y == heightmap.len() - 1 {
-                local_minima =
-                    heightmap[y][x] < heightmap[y - 1][x] && heightmap[y][x] < heightmap[y][x - 1];
-            } else if x == heightmap.len() - 1 {
-                local_minima = heightmap[y][x] < heightmap[y - 1][x]
-                    && heightmap[y][x] < heightmap[y + 1][x]
-                    && heightmap[y][x] < heightmap[y][x - 1];
-            } else if y == heightmap.len() - 1 {
-                local_minima = heightmap[y][x] < heightmap[y - 1][x]
-                    && heightmap[y][x] < heightmap[y][x + 1]
-                    && heightmap[y][x] < heightmap[y][x - 1];
-            } else {
-                local_minima = heightmap[y][x] < heightmap[y - 1][x]
-                    && heightmap[y][x] < heightmap[y + 1][x]
-                    && heightmap[y][x] < heightmap[y][x - 1]
-                    && heightmap[y][x] < heightmap[y][x + 1];
-            }
+    for (x_n, y_n) in neighbours {
+        if heightmap[y][x] > heightmap[y_n][x_n] {
+            return false;
         }
     }
 
-    return local_minima;
+    return true;
 }
 
 fn get_local_minima() -> Vec<(usize, usize)> {
@@ -84,29 +44,29 @@ fn get_local_minima() -> Vec<(usize, usize)> {
     return local_minima;
 }
 
+fn get_neighbours(heightmap: &Vec<Vec<i32>>, x: usize, y: usize) -> Vec<(usize, usize)> {
+    let mut neighbours: Vec<(usize, usize)> = Vec::new();
+    if x > 0 {
+        neighbours.push((x - 1, y));
+    }
+    if x < heightmap[y].len() - 1 {
+        neighbours.push((x + 1, y));
+    }
+    if y > 0 {
+        neighbours.push((x, y - 1));
+    }
+    if y < heightmap.len() - 1 {
+        neighbours.push((x, y + 1));
+    }
+    return neighbours;
+}
+
 fn expand_basin(heightmap: &Vec<Vec<i32>>, basin: &Vec<(usize, usize)>) -> Vec<(usize, usize)> {
     let mut expanded_basin: Vec<(usize, usize)> = basin.clone();
 
     for (x, y) in basin.iter().cloned() {
-        let mut neighbors: Vec<(usize, usize)> = Vec::new();
-
-        if x > 0 {
-            neighbors.push((x - 1, y));
-        }
-
-        if x < heightmap[y].len() - 1 {
-            neighbors.push((x + 1, y));
-        }
-
-        if y > 0 {
-            neighbors.push((x, y - 1));
-        }
-
-        if y < heightmap.len() - 1 {
-            neighbors.push((x, y + 1));
-        }
-
-        for (x_n, y_n) in neighbors.iter().cloned() {
+        let neighbours = get_neighbours(&heightmap, x, y);
+        for (x_n, y_n) in neighbours.iter().cloned() {
             if heightmap[y_n][x_n] > heightmap[y][x] && heightmap[y_n][x_n] < 9 {
                 if basin
                     .iter()
