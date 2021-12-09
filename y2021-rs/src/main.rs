@@ -7,7 +7,7 @@ mod utils;
 fn main() {
     let now = std::time::Instant::now();
 
-    println!("{}", day09::Day09::solve_part1());
+    println!("{}", day09::Day09::solve_part2());
 
     println!(
         "ran for {}ms",
