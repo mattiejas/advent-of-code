@@ -32,8 +32,8 @@ fn tokenize(input: &str) -> Vec<Token> {
     tokens
 }
 
-// check syntax returns the invalid token if there is one
-fn check_syntax(tokens: &Vec<Token>) -> Option<(usize, Token)> {
+// check syntax returns the invalid token if there is one, and the remaining stack of tokens
+fn check_syntax(tokens: &Vec<Token>) -> (Option<(usize, Token)>, Vec<Token>) {
     let mut stack = Vec::new();
 
     for (i, token) in tokens.iter().cloned().enumerate() {
@@ -51,7 +51,7 @@ fn check_syntax(tokens: &Vec<Token>) -> Option<(usize, Token)> {
                     }
                 }
                 // can't close a paren without an open one
-                return Some((i, Token::CloseParen));
+                return (Some((i, Token::CloseParen)), stack);
             }
 
             Token::CloseBracket => {
@@ -61,7 +61,7 @@ fn check_syntax(tokens: &Vec<Token>) -> Option<(usize, Token)> {
                     }
                 }
                 // can't close a bracket without an open one
-                return Some((i, Token::CloseBracket));
+                return (Some((i, Token::CloseBracket)), stack);
             }
 
             Token::CloseBrace => {
@@ -71,7 +71,7 @@ fn check_syntax(tokens: &Vec<Token>) -> Option<(usize, Token)> {
                     }
                 }
                 // can't close a brace without an open one
-                return Some((i, Token::CloseBrace));
+                return (Some((i, Token::CloseBrace)), stack);
             }
 
             Token::CloseAngular => {
@@ -81,26 +81,31 @@ fn check_syntax(tokens: &Vec<Token>) -> Option<(usize, Token)> {
                     }
                 }
                 // can't close an angular without an open one
-                return Some((i, Token::CloseAngular));
+                return (Some((i, Token::CloseAngular)), stack);
             }
         }
     }
 
-    return None;
+    return (None, stack);
+}
+
+fn get_tokens_list() -> Vec<Vec<Token>> {
+    let input = utils::input(10, false);
+    return input
+        .trim()
+        .split('\n')
+        .map(|line| tokenize(line))
+        .collect();
 }
 
 impl day::Day for Day10 {
     fn solve_part1() -> String {
-        let input = utils::input(10, false);
-        let token_list: Vec<Vec<Token>> = input
-            .trim()
-            .split('\n')
-            .map(|line| tokenize(line))
-            .collect();
+        let tokens_list = get_tokens_list();
 
         let mut score = 0;
-        for token_list in token_list {
-            if let Some((_, token)) = check_syntax(&token_list) {
+        for tokens in tokens_list {
+            let (x, _) = check_syntax(&tokens);
+            if let Some((_, token)) = x {
                 score += token as isize;
             }
         }
@@ -109,6 +114,36 @@ impl day::Day for Day10 {
     }
 
     fn solve_part2() -> String {
-        todo!()
+        let tokens_list = get_tokens_list();
+
+        let mut scores: Vec<i64> = vec![];
+        for tokens in tokens_list {
+            let (x, stack) = check_syntax(&tokens);
+            if x.is_none() && !stack.is_empty() {
+                let mut remaining = stack.clone();
+                let mut score = 0;
+
+                while let Some(token) = remaining.pop() {
+                    score *= 5;
+                    score += match token {
+                        Token::OpenParen => 1,
+                        Token::OpenBracket => 2,
+                        Token::OpenBrace => 3,
+                        Token::OpenAngular => 4,
+                        _ => 0,
+                    };
+                }
+
+                scores.push(score);
+            }
+        }
+
+        scores.sort();
+        return scores
+            .iter()
+            .skip(scores.len() / 2)
+            .take(1)
+            .collect::<Vec<_>>()[0]
+            .to_string();
     }
 }
