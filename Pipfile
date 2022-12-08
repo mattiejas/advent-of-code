@@ -11,6 +11,8 @@ tensorflow-gpu = "*"
 scikit-learn = "*"
 flake8 = "*"
 scipy = "*"
+matplotlib = "*"
+seaborn = "*"
 
 [dev-packages]
 
