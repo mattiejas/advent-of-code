@@ -13,6 +13,7 @@ flake8 = "*"
 scipy = "*"
 matplotlib = "*"
 seaborn = "*"
+autopep8 = "*"
 
 [dev-packages]
 
