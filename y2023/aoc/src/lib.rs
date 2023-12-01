@@ -14,12 +14,18 @@ impl Solution {
     pub fn run<'a, TOutput, TPart>(&'a self, part: &TPart)
     where
         TPart: Part<&'a str, TOutput>,
+        TPart: fmt::Debug,
         TOutput: fmt::Display,
     {
+        let start = std::time::Instant::now();
+
         match part.solve(self.input.as_str()) {
-            Ok(result) => println!("Part one result: {}", result),
-            Err(err) => println!("Part one error: {}", err),
+            Ok(result) => println!("{:?} result: {}", part, result),
+            Err(err) => println!("{:?} error: {}", part, err),
         }
+        let duration = start.elapsed();
+
+        println!("Time elapsed solving {:?} is: {:?}\n", part, duration);
     }
 }
 

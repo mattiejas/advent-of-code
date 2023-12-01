@@ -1,4 +1,6 @@
+#[derive(Debug)]
 struct Part1;
+#[derive(Debug)]
 struct Part2;
 
 const WRITTEN_NUMBERS: [&'static str; 10] = [
