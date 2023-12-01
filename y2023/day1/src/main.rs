@@ -1,13 +1,12 @@
-use aoc::{Part1, Part2};
-
-struct Solution;
+struct Part1;
+struct Part2;
 
 const WRITTEN_NUMBERS: [&'static str; 10] = [
     "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
 ];
 
-impl aoc::Part1<&str, usize> for Solution {
-    fn solve_part_one(&self, input: &str) -> aoc::Result<usize> {
+impl aoc::Part<&str, usize> for Part1 {
+    fn solve(&self, input: &str) -> aoc::Result<usize> {
         let split_lines = aoc::split_input(input);
 
         let summed_calibration_value = match sum_calibration_values(&split_lines, false) {
@@ -19,8 +18,8 @@ impl aoc::Part1<&str, usize> for Solution {
     }
 }
 
-impl aoc::Part2<&str, usize> for Solution {
-    fn solve_part_two(&self, input: &str) -> aoc::Result<usize> {
+impl aoc::Part<&str, usize> for Part2 {
+    fn solve(&self, input: &str) -> aoc::Result<usize> {
         let split_lines = aoc::split_input(input);
 
         let summed_calibration_value = match sum_calibration_values(&split_lines, true) {
@@ -53,18 +52,14 @@ fn sum_calibration_values(split_lines: &Vec<&str>, expand_written_num: bool) -> 
 }
 
 fn main() {
-    let solution = Solution;
     let input = include_str!("../input.txt");
+    let solution = aoc::Solution::new(input.to_string());
 
-    match solution.solve_part_one(input) {
-        Ok(result) => println!("Part one result: {}", result),
-        Err(err) => println!("Part one error: {}", err),
-    }
+    let part1 = Part1;
+    solution.run(&part1);
 
-    match solution.solve_part_two(input) {
-        Ok(result) => println!("Part two result: {}", result),
-        Err(err) => println!("Part two error: {}", err),
-    }
+    let part2 = Part2;
+    solution.run(&part2);
 }
 
 fn find_calibration_value(input: &str, expand_written_num: bool) -> aoc::Result<usize> {

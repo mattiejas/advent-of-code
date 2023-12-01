@@ -2,12 +2,29 @@ use std::fmt;
 
 pub type Result<T> = std::result::Result<T, AocError>;
 
-pub trait Part1<TInput, TOutput> {
-    fn solve_part_one(&self, input: TInput) -> Result<TOutput>;
+pub struct Solution {
+    input: String,
 }
 
-pub trait Part2<TInput, TOutput> {
-    fn solve_part_two(&self, input: TInput) -> Result<TOutput>;
+impl Solution {
+    pub fn new(input: String) -> Self {
+        Solution { input }
+    }
+
+    pub fn run<'a, TOutput, TPart>(&'a self, part: &TPart)
+    where
+        TPart: Part<&'a str, TOutput>,
+        TOutput: fmt::Display,
+    {
+        match part.solve(self.input.as_str()) {
+            Ok(result) => println!("Part one result: {}", result),
+            Err(err) => println!("Part one error: {}", err),
+        }
+    }
+}
+
+pub trait Part<TInput, TOutput> {
+    fn solve(&self, input: TInput) -> Result<TOutput>;
 }
 
 #[derive(Debug, Clone)]
