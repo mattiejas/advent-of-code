@@ -1,4 +1,5 @@
 use std::fmt;
+use log::{error, debug, trace, info};
 
 pub type Result<T> = std::result::Result<T, AocError>;
 
@@ -12,20 +13,22 @@ impl Solution {
     }
 
     pub fn run<'a, TOutput, TPart>(&'a self, part: &TPart)
-    where
-        TPart: Part<&'a str, TOutput>,
-        TPart: fmt::Debug,
-        TOutput: fmt::Display,
+        where
+            TPart: Part<&'a str, TOutput>,
+            TPart: fmt::Debug,
+            TOutput: fmt::Display,
     {
+        debug!("Solving {:?}", part);
+
         let start = std::time::Instant::now();
 
         match part.solve(self.input.as_str()) {
-            Ok(result) => println!("{:?} result: {}", part, result),
-            Err(err) => println!("{:?} error: {}", part, err),
+            Ok(result) => info!("{:?} result: {}", part, result),
+            Err(err) => error!("{:?} error: {}", part, err),
         }
         let duration = start.elapsed();
 
-        println!("Time elapsed solving {:?} is: {:?}\n", part, duration);
+        trace!("Time elapsed solving {:?} = {:?}\n", part, duration);
     }
 }
 
@@ -54,7 +57,7 @@ impl AocError {
 
 impl fmt::Display for AocError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "AocError: {}", self.message)
+        write!(f, "{}", self.message)
     }
 }
 
@@ -102,4 +105,11 @@ mod tests {
         assert_eq!(result[1], "two");
         assert_eq!(result[2], "three");
     }
+}
+
+pub fn init_logging() {
+    env_logger::Builder::from_default_env()
+        .filter_level(log::LevelFilter::Trace)
+        .target(env_logger::Target::Stdout)
+        .init();
 }

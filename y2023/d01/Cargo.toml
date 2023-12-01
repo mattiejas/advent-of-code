@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 aoc = { path = "../aoc" }
 regex = { workspace = true }
+env_logger = { workspace = true }

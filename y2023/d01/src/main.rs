@@ -1,5 +1,6 @@
 #[derive(Debug)]
 struct Part1;
+
 #[derive(Debug)]
 struct Part2;
 
@@ -44,7 +45,7 @@ fn sum_calibration_values(split_lines: &Vec<&str>, expand_written_num: bool) -> 
                 return Err(aoc::AocError::from_with_msg(
                     err,
                     format!("Failed to find calibration value for line: {}", line).as_str(),
-                ))
+                ));
             }
         };
 
@@ -54,6 +55,8 @@ fn sum_calibration_values(split_lines: &Vec<&str>, expand_written_num: bool) -> 
 }
 
 fn main() {
+    aoc::init_logging();
+
     let input = include_str!("../input.txt");
     let solution = aoc::Solution::new(input.to_string());
 
