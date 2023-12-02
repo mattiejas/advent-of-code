@@ -1,5 +1,6 @@
 use std::error::Error;
 use std::fmt;
+use std::num::ParseIntError;
 
 pub type Result<T> = std::result::Result<T, AocError>;
 
@@ -24,5 +25,11 @@ impl Error for AocError {
             AocError::ParseError(ref _message) => None,
             AocError::RegexError(ref err) => Some(err),
         }
+    }
+}
+
+impl From<ParseIntError> for AocError {
+    fn from(err: ParseIntError) -> Self {
+        AocError::ParseError(err.to_string())
     }
 }
