@@ -8,4 +8,8 @@ The solutions are written in Rust. Run any solution with `cargo run --bin dXX` w
 
 ## Scaffold a new day
 
+```ps
+cargo install cargo-generate
+```
+
 To scaffold a new day, run `cargo generate --path template` and follow the instructions.

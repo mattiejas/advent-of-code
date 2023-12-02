@@ -1,7 +1,8 @@
+pub mod error;
+
 use std::fmt;
 use log::{error, debug, trace, info};
 
-pub type Result<T> = std::result::Result<T, AocError>;
 
 pub struct Solution {
     input: String,
@@ -33,32 +34,7 @@ impl Solution {
 }
 
 pub trait Part<TInput, TOutput> {
-    fn solve(&self, input: TInput) -> Result<TOutput>;
-}
-
-#[derive(Debug, Clone)]
-pub struct AocError {
-    message: String,
-}
-
-impl AocError {
-    pub fn from<T: fmt::Display>(error: T) -> Self {
-        AocError {
-            message: error.to_string(),
-        }
-    }
-
-    pub fn from_with_msg<T: fmt::Display>(error: T, message: &str) -> Self {
-        AocError {
-            message: format!("{}: {}", message, error),
-        }
-    }
-}
-
-impl fmt::Display for AocError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.message)
-    }
+    fn solve(&self, input: TInput) -> error::Result<TOutput>;
 }
 
 pub fn split_input(input: &str) -> Vec<&str> {

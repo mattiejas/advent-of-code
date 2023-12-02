@@ -1,3 +1,5 @@
+use aoc::error::*;
+
 #[derive(Debug)]
 struct Part1;
 
@@ -9,7 +11,7 @@ const WRITTEN_NUMBERS: [&'static str; 10] = [
 ];
 
 impl aoc::Part<&str, usize> for Part1 {
-    fn solve(&self, input: &str) -> aoc::Result<usize> {
+    fn solve(&self, input: &str) -> Result<usize> {
         let split_lines = aoc::split_input(input);
 
         let summed_calibration_value = match sum_calibration_values(&split_lines, false) {
@@ -22,7 +24,7 @@ impl aoc::Part<&str, usize> for Part1 {
 }
 
 impl aoc::Part<&str, usize> for Part2 {
-    fn solve(&self, input: &str) -> aoc::Result<usize> {
+    fn solve(&self, input: &str) -> Result<usize> {
         let split_lines = aoc::split_input(input);
 
         let summed_calibration_value = match sum_calibration_values(&split_lines, true) {
@@ -34,7 +36,7 @@ impl aoc::Part<&str, usize> for Part2 {
     }
 }
 
-fn sum_calibration_values(split_lines: &Vec<&str>, expand_written_num: bool) -> aoc::Result<usize> {
+fn sum_calibration_values(split_lines: &Vec<&str>, expand_written_num: bool) -> Result<usize> {
     let mut summed_calibration_value = 0;
     for line in split_lines {
         let calibration_value = find_calibration_value(line, expand_written_num);
@@ -42,10 +44,10 @@ fn sum_calibration_values(split_lines: &Vec<&str>, expand_written_num: bool) -> 
         let val = match calibration_value {
             Ok(value) => value,
             Err(err) => {
-                return Err(aoc::AocError::from_with_msg(
-                    err,
-                    format!("Failed to find calibration value for line: {}", line).as_str(),
-                ));
+                return Err(AocError::ParseError(format!(
+                    "Failed to parse calibration value: {}",
+                    err
+                )));
             }
         };
 
@@ -67,7 +69,7 @@ fn main() {
     solution.run(&part2);
 }
 
-fn find_calibration_value(input: &str, expand_written_num: bool) -> aoc::Result<usize> {
+fn find_calibration_value(input: &str, expand_written_num: bool) -> Result<usize> {
     let mut processed_input = input.to_string();
 
     if expand_written_num {
@@ -76,7 +78,7 @@ fn find_calibration_value(input: &str, expand_written_num: bool) -> aoc::Result<
 
     let re = match regex::Regex::new(r"\d") {
         Ok(re) => re,
-        Err(err) => return Err(aoc::AocError::from(err)),
+        Err(err) => return Err(AocError::RegexError(err)),
     };
 
     let mut digits: Vec<usize> = Vec::new();
@@ -87,7 +89,9 @@ fn find_calibration_value(input: &str, expand_written_num: bool) -> aoc::Result<
     }
 
     if digits.len() == 0 {
-        return Err(aoc::AocError::from("No digits found in input"));
+        return Err(AocError::ParseError(
+            "Failed to find any digits in input".to_string(),
+        ));
     }
 
     let first_digit = digits[0];
@@ -97,7 +101,7 @@ fn find_calibration_value(input: &str, expand_written_num: bool) -> aoc::Result<
 
     let parsed_calibration_value = match calibration_value.parse::<usize>() {
         Ok(value) => value,
-        Err(err) => return Err(aoc::AocError::from(err)),
+        Err(err) => return Err(AocError::ParseError(err.to_string())),
     };
 
     Ok(parsed_calibration_value)

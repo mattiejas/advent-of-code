@@ -16,6 +16,8 @@ impl aoc::Part<&str, usize> for Part2 {
 }
 
 fn main() {
+    aoc::init_logging();
+
     let input = include_str!("../input.txt");
     let solution = aoc::Solution::new(input.to_string());
 
