@@ -1,4 +1,5 @@
 pub mod error;
+pub mod coord;
 
 use std::fmt;
 use log::{error, debug, trace, info};
