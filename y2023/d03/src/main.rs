@@ -93,9 +93,9 @@ fn find_numbers_in_line(line: &str, y: i32) -> Vec<(i32, Coord)> {
 
     let capture = regex::Regex::new(r"\d+").unwrap();
 
-    for i in capture.find_iter(line) {
-        let number = i.as_str().parse::<i32>().unwrap();
-        numbers.push((number, Coord::new(i.start() as i32, y)));
+    for found_match in capture.find_iter(line) {
+        let number = found_match.as_str().parse::<i32>().unwrap();
+        numbers.push((number, Coord::new(found_match.start() as i32, y)));
     }
 
     numbers
