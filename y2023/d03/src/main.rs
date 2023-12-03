@@ -1,6 +1,5 @@
-use aoc::error::{Result, AocError};
+use aoc::error::Result;
 use aoc::coord::{BoundingBox, Coord};
-use log::info;
 
 #[derive(Debug)]
 struct Part1;
@@ -19,7 +18,34 @@ impl aoc::Part<&str, usize> for Part1 {
 
 impl aoc::Part<&str, usize> for Part2 {
     fn solve(&self, input: &str) -> Result<usize> {
-        Ok(0)
+        let lines = aoc::split_input(input);
+        let all_symbols = find_special_symbols(&lines);
+
+        // remove all symbols that are not *
+        let symbols = all_symbols.into_iter().filter(|(c, _)| *c == '*').collect::<Vec<_>>();
+        let numbers = find_numbers(&lines);
+
+        let mut sum = 0;
+        for (_symbol, symbol_coord) in &symbols {
+            let mut nums_in_reach = Vec::new();
+
+            for (num, num_coord) in &numbers {
+                let bb = get_bounding_box(num_coord, *num, lines[0].len(), lines.len());
+
+                if bb.contains(&symbol_coord) {
+                    // info!("{} is in the bounding box of {}", _symbol, num);
+                    nums_in_reach.push(*num);
+                }
+            }
+
+            if nums_in_reach.len() == 2 {
+                let num1 = nums_in_reach[0];
+                let num2 = nums_in_reach[1];
+                sum += num1 * num2;
+            }
+        }
+
+        Ok(sum as usize)
     }
 }
 
@@ -41,12 +67,12 @@ fn sum_numbers_with_symbols_in_bb(lines: &[&str]) -> i32 {
     let symbols = find_special_symbols(&lines);
     let numbers = find_numbers(&lines);
 
-    for (symbol, symbol_coord) in &symbols {
+    for (_symbol, symbol_coord) in &symbols {
         for (num, num_coord) in &numbers {
             let bb = get_bounding_box(num_coord, *num, lines[0].len(), lines.len());
 
             if bb.contains(&symbol_coord) {
-                println!("{} is in the bounding box of {}", symbol, num);
+                // info!("{} is in the bounding box of {}", _symbol, num);
                 sum += num;
             }
         }
@@ -217,7 +243,7 @@ mod tests {
 
         // Assert
         assert_eq!(bb.start, Coord::new(4, 4));
-        assert_eq!(bb.end, Coord::new(9, 6));
+        assert_eq!(bb.end, Coord::new(8, 6));
     }
 
     #[test]

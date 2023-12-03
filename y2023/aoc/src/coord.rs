@@ -14,10 +14,6 @@ impl Coord {
     pub fn new(x: i32, y: i32) -> Self {
         Self { x, y }
     }
-
-    fn manhattan_distance(&self, other: &Self) -> i32 {
-        (self.x - other.x).abs() + (self.y - other.y).abs()
-    }
 }
 
 impl BoundingBox {
@@ -53,9 +49,10 @@ mod tests {
         let start = Coord::new(0, 0);
         let end = Coord::new(3, 4);
         let bounding_box = BoundingBox::new(start, end);
+        let coord = Coord::new(1, 2);
 
         // Act
-        let result = bounding_box.contains(Coord::new(1, 2));
+        let result = bounding_box.contains(&coord);
 
         // Assert
         assert_eq!(result, true);
@@ -67,9 +64,10 @@ mod tests {
         let start = Coord::new(0, 0);
         let end = Coord::new(3, 4);
         let bounding_box = BoundingBox::new(start, end);
+        let coord = Coord::new(4, 5);
 
         // Act
-        let result = bounding_box.contains(Coord::new(4, 5));
+        let result = bounding_box.contains(&coord);
 
         // Assert
         assert_eq!(result, false);

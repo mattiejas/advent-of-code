@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use aoc::error::*;
-use log::{info, warn};
 
 #[derive(Debug)]
 struct Part1;
@@ -87,7 +86,7 @@ pub enum Color {
 }
 
 impl Color {
-    fn from_str(input: &str) -> aoc::error::Result<Self> {
+    fn from_str(input: &str) -> Result<Self> {
         match input {
             "red" => Ok(Self::Red),
             "green" => Ok(Self::Green),
@@ -116,16 +115,16 @@ impl Game {
         }
     }
 
-    fn from_str(input: &str) -> aoc::error::Result<Self> {
+    fn from_str(input: &str) -> Result<Self> {
         let mut parts = input.split(": ");
 
         let id = parts.next().unwrap().trim_start_matches("Game ").parse::<usize>()?;
         let mut game = Game::new(id, 0, 0, 0);
 
-        let mut sets = parts.next().unwrap().split("; ");
+        let sets = parts.next().unwrap().split("; ");
 
         for set in sets {
-            let mut colors = set.split(", ");
+            let colors = set.split(", ");
 
             for color in colors {
                 let count = color.split(" ").next().unwrap().parse::<usize>()?;
