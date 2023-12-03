@@ -10,7 +10,10 @@ struct Part2;
 impl aoc::Part<&str, usize> for Part1 {
     fn solve(&self, input: &str) -> Result<usize> {
         let lines = aoc::split_input(input);
-        let sum = sum_numbers_with_symbols_in_bb(&lines);
+
+        let sum = sum_nums_surrounding_symbols(&lines, |group, _| {
+            group.iter().sum()
+        })?;
 
         Ok(sum as usize)
     }
@@ -19,31 +22,14 @@ impl aoc::Part<&str, usize> for Part1 {
 impl aoc::Part<&str, usize> for Part2 {
     fn solve(&self, input: &str) -> Result<usize> {
         let lines = aoc::split_input(input);
-        let all_symbols = find_special_symbols(&lines);
 
-        // remove all symbols that are not *
-        let symbols = all_symbols.into_iter().filter(|(c, _)| *c == '*').collect::<Vec<_>>();
-        let numbers = find_numbers(&lines);
-
-        let mut sum = 0;
-        for (_symbol, symbol_coord) in &symbols {
-            let mut nums_in_reach = Vec::new();
-
-            for (num, num_coord) in &numbers {
-                let bb = get_bounding_box(num_coord, *num, lines[0].len(), lines.len());
-
-                if bb.contains(&symbol_coord) {
-                    // info!("{} is in the bounding box of {}", _symbol, num);
-                    nums_in_reach.push(*num);
-                }
+        let sum = sum_nums_surrounding_symbols(&lines, |group, char| {
+            if char == '*' && group.len() > 1 {
+                return group.iter().product();
             }
 
-            if nums_in_reach.len() == 2 {
-                let num1 = nums_in_reach[0];
-                let num2 = nums_in_reach[1];
-                sum += num1 * num2;
-            }
-        }
+            0
+        })?;
 
         Ok(sum as usize)
     }
@@ -62,23 +48,34 @@ fn main() {
     solution.run(&part2);
 }
 
-fn sum_numbers_with_symbols_in_bb(lines: &[&str]) -> i32 {
+fn sum_nums_surrounding_symbols(lines: &[&str], combine: fn(Vec<i32>, char) -> i32) -> Result<i32> {
     let mut sum = 0;
     let symbols = find_special_symbols(&lines);
     let numbers = find_numbers(&lines);
 
-    for (_symbol, symbol_coord) in &symbols {
-        for (num, num_coord) in &numbers {
-            let bb = get_bounding_box(num_coord, *num, lines[0].len(), lines.len());
-
-            if bb.contains(&symbol_coord) {
-                // info!("{} is in the bounding box of {}", _symbol, num);
-                sum += num;
-            }
-        }
+    if lines.len() == 0 {
+        return Ok(sum);
     }
 
-    sum
+    let max_line_len = lines[0].len();
+    let max_lines = lines.len();
+
+    for (symbol, symbol_coord) in &symbols {
+        let mut nums_in_reach = Vec::new();
+
+        for (num, num_coord) in &numbers {
+            let bb = get_bounding_box_for_number(num_coord, *num, max_line_len, max_lines);
+
+            if bb.contains(&symbol_coord) {
+                nums_in_reach.push(*num);
+            }
+        }
+
+        let result = combine(nums_in_reach, *symbol);
+        sum += result;
+    }
+
+    Ok(sum)
 }
 
 fn find_numbers(lines: &[&str]) -> Vec<(i32, Coord)> {
@@ -127,7 +124,7 @@ fn find_special_symbols_in_line(line: &str, y: i32) -> Vec<(char, Coord)> {
     symbols
 }
 
-fn get_bounding_box(coord: &Coord, num: i32, max_line_len: usize, max_lines: usize) -> BoundingBox {
+fn get_bounding_box_for_number(coord: &Coord, num: i32, max_line_len: usize, max_lines: usize) -> BoundingBox {
     let mut start = coord.clone();
     let mut end = coord.clone();
 
@@ -231,7 +228,7 @@ mod tests {
     }
 
     #[test]
-    fn get_bounding_box_for_number() {
+    fn test_bounding_box_for_number() {
         // Arrange
         let coord = Coord::new(5, 5);
         let num = 123;
@@ -239,7 +236,7 @@ mod tests {
         let max_lines = 10;
 
         // Act
-        let bb = get_bounding_box(&coord, num, max_line_len, max_lines);
+        let bb = get_bounding_box_for_number(&coord, num, max_line_len, max_lines);
 
         // Assert
         assert_eq!(bb.start, Coord::new(4, 4));
@@ -264,7 +261,9 @@ mod tests {
         let lines = aoc::split_input(input);
 
         // Act
-        let sum = sum_numbers_with_symbols_in_bb(&lines);
+        let sum = sum_nums_surrounding_symbols(&lines, |group, _| {
+            group.iter().sum()
+        }).unwrap();
 
         // Assert
         assert_eq!(sum, 4361);
