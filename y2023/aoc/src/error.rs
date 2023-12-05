@@ -33,3 +33,9 @@ impl From<ParseIntError> for AocError {
         AocError::ParseError(err.to_string())
     }
 }
+
+impl From<regex::Error> for AocError {
+    fn from(err: regex::Error) -> Self {
+        AocError::RegexError(err)
+    }
+}

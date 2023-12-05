@@ -1,16 +1,19 @@
+use aoc::error::{Result};
+
 #[derive(Debug)]
 struct Part1;
+
 #[derive(Debug)]
 struct Part2;
 
 impl aoc::Part<&str, usize> for Part1 {
-    fn solve(&self, input: &str) -> aoc::Result<usize> {
+    fn solve(&self, input: &str) -> Result<usize> {
         Ok(0)
     }
 }
 
 impl aoc::Part<&str, usize> for Part2 {
-    fn solve(&self, input: &str) -> aoc::Result<usize> {
+    fn solve(&self, input: &str) -> Result<usize> {
         Ok(0)
     }
 }
