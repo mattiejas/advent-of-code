@@ -1,8 +1,5 @@
-use std::f32::consts::E;
-
 use aoc::error::{AocError, Result};
-use indicatif::{ParallelProgressIterator, ProgressIterator};
-use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 #[derive(Debug)]
 struct Part1;
@@ -82,7 +79,7 @@ fn count_race_wins(race: &Race) -> usize {
 fn race_wins_multiplied(races: &[Race]) -> usize {
     let mut product = 1;
 
-    for race in races.iter().progress() {
+    for race in races.iter() {
         product *= count_race_wins(race);
     }
 
