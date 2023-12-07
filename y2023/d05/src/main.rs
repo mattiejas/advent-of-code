@@ -1,7 +1,7 @@
-use std::collections::HashMap;
-use indicatif::{ParallelProgressIterator};
-use aoc::error::{Result};
+use aoc::error::Result;
+use indicatif::ParallelProgressIterator;
 use rayon::prelude::*;
+use std::collections::HashMap;
 
 #[derive(Debug)]
 struct Part1;
@@ -25,7 +25,6 @@ impl aoc::Part<&str, u64> for Part1 {
         let order = parse_instruction_order(&lines[1..])?;
         let lowest_location = find_lowest_number_in_range(&seeds, &order, &instructions);
         Ok(lowest_location)
-
     }
 }
 
@@ -35,22 +34,37 @@ impl aoc::Part<&str, u64> for Part2 {
         let seeds = parse_seeds_ranges(lines[0])?;
         let instructions = parse_instructions(&lines[1..])?;
         let order = parse_instruction_order(&lines[1..])?;
-        let lowest_location = find_lowest_number_in_range(&flatten_seeds(&seeds), &order, &instructions);
+        let lowest_location =
+            find_lowest_number_in_range(&flatten_seeds(&seeds), &order, &instructions);
         Ok(lowest_location)
     }
 }
 
-fn find_lowest_number_in_range(seeds: &Vec<u64>, order: &[String], instructions: &HashMap<String, Vec<Instruction>>) -> u64 {
-    let locations = seeds.par_iter().progress().map(|seed| {
-        order[..order.len() - 1].iter().fold(*seed, |seed, from| {
-           instructions.get(from).unwrap().iter().find(|instruction| {
-               let source_range = instruction.source_range.0..instruction.source_range.1;
-               source_range.contains(&seed)
-           }).map(|instruction| {
-               seed - instruction.source_range.0 + instruction.destination_range.0
-           }).unwrap_or(seed)
+fn find_lowest_number_in_range(
+    seeds: &Vec<u64>,
+    order: &[String],
+    instructions: &HashMap<String, Vec<Instruction>>,
+) -> u64 {
+    let locations = seeds
+        .par_iter()
+        .progress()
+        .map(|seed| {
+            order[..order.len() - 1].iter().fold(*seed, |seed, from| {
+                instructions
+                    .get(from)
+                    .unwrap()
+                    .iter()
+                    .find(|instruction| {
+                        let source_range = instruction.source_range.0..instruction.source_range.1;
+                        source_range.contains(&seed)
+                    })
+                    .map(|instruction| {
+                        seed - instruction.source_range.0 + instruction.destination_range.0
+                    })
+                    .unwrap_or(seed)
+            })
         })
-    }).collect::<Vec<u64>>();
+        .collect::<Vec<u64>>();
 
     let min_location = locations.iter().min().unwrap();
     *min_location
@@ -86,11 +100,16 @@ fn parse_seeds(input: &str) -> Result<Vec<u64>> {
     match regex::Regex::new(r"seeds:\s+(.*)")?.captures(input) {
         Some(captures) => {
             let seed_str = captures.get(1).unwrap().as_str();
-            seeds = seed_str.split_whitespace()
+            seeds = seed_str
+                .split_whitespace()
                 .map(|num| num.parse::<u64>().unwrap())
                 .collect::<Vec<u64>>();
         }
-        None => return Err(aoc::error::AocError::ParseError("Failed to parse seeds".to_string())),
+        None => {
+            return Err(aoc::error::AocError::ParseError(
+                "Failed to parse seeds".to_string(),
+            ))
+        }
     }
 
     Ok(seeds)
@@ -102,15 +121,21 @@ fn parse_seeds_ranges(input: &str) -> Result<Vec<(u64, u64)>> {
     match regex::Regex::new(r"seeds:\s+(.*)")?.captures(input) {
         Some(captures) => {
             let seed_str = captures.get(1).unwrap().as_str();
-            let numbers = seed_str.split_whitespace()
+            let numbers = seed_str
+                .split_whitespace()
                 .map(|num| num.parse::<u64>().unwrap())
                 .collect::<Vec<u64>>();
 
-            seeds = numbers.chunks(2)
+            seeds = numbers
+                .chunks(2)
                 .map(|pair| (pair[0], pair[0] + pair[1]))
                 .collect::<Vec<(u64, u64)>>();
         }
-        None => return Err(aoc::error::AocError::ParseError("Failed to parse seeds".to_string())),
+        None => {
+            return Err(aoc::error::AocError::ParseError(
+                "Failed to parse seeds".to_string(),
+            ))
+        }
     }
 
     Ok(seeds)
@@ -167,12 +192,15 @@ fn parse_instructions(lines: &[&str]) -> Result<HashMap<String, Vec<Instruction>
         }
     }
 
-    let instruction_map = instructions.iter().fold(HashMap::<String, Vec<Instruction>>::new(), |mut map, instruction| {
-        let instructions = map.entry(instruction.from.clone()).or_insert(Vec::new());
-        instructions.push(instruction.clone());
+    let instruction_map = instructions.iter().fold(
+        HashMap::<String, Vec<Instruction>>::new(),
+        |mut map, instruction| {
+            let instructions = map.entry(instruction.from.clone()).or_insert(Vec::new());
+            instructions.push(instruction.clone());
 
-        map
-    });
+            map
+        },
+    );
 
     Ok(instruction_map)
 }
@@ -243,7 +271,6 @@ humidity-to-location map:
         let lines = aoc::split_input(input);
         let seeds = parse_seeds(lines[0]).unwrap();
         let instructions = parse_instructions(&lines[1..]).unwrap();
-        let order = parse_instruction_order(&lines[1..]).unwrap();
 
         assert_eq!(seeds, vec![79, 14, 55, 13]);
 
@@ -252,9 +279,6 @@ humidity-to-location map:
         assert_eq!(instruction.to, "soil");
         assert_eq!(instruction.destination_range, (50, 52));
         assert_eq!(instruction.source_range, (98, 100));
-
-        let location = find_location(79, 0, &order, &instructions).unwrap();
-        assert_eq!(location, 82);
     }
 
     #[test]
