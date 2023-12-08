@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use aoc::error::Result;
+use rayon::prelude::*;
 
 #[derive(Debug)]
 struct Part1;
@@ -64,7 +65,7 @@ impl CamelPouch {
         // AAA = (BBB, CCC)
         let mapping_re = regex::Regex::new(r"(\w+) = \((\w+), (\w+)\)").unwrap();
         let mappings = lines[1..]
-            .iter()
+            .par_iter()
             .map(|line| {
                 let captures = mapping_re.captures(line).unwrap();
                 let from = captures.get(1).unwrap().as_str();
@@ -118,27 +119,24 @@ impl CamelPouch {
         // get the nodes that end with an 'A'
         let starting_nodes = self
             .network_nodes
-            .iter()
+            .par_iter()
             .filter(|(node, _)| node.ends_with('A'))
             .map(|(node, _)| node)
             .collect::<Vec<_>>();
 
         let target_nodes = self
             .network_nodes
-            .iter()
+            .par_iter()
             .filter(|(node, _)| node.ends_with('Z'))
             .map(|(node, _)| node.to_string())
             .collect::<Vec<_>>();
 
         let steps_per_node = starting_nodes
-            .iter()
+            .par_iter()
             .map(|node| self.navigate(node, target_nodes.clone()).unwrap())
             .collect::<Vec<_>>();
 
-        // find least common multiple of all steps_per_node
-        let lcm = aoc::math::least_common_multiple(steps_per_node);
-
-        Ok(lcm)
+        return Ok(aoc::math::least_common_multiple(steps_per_node));
     }
 }
 

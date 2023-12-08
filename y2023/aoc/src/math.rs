@@ -9,9 +9,21 @@ pub fn least_common_multiple(numbers: Vec<usize>) -> usize {
 }
 
 pub fn greatest_common_divisor(a: usize, b: usize) -> usize {
-    if b == 0 {
-        return a;
+    let mut max = a;
+    let mut min = b;
+
+    if a < b {
+        max = b;
+        min = a;
     }
 
-    greatest_common_divisor(b, a % b)
+    let mut remainder = max % min;
+
+    while remainder != 0 {
+        max = min;
+        min = remainder;
+        remainder = max % min;
+    }
+
+    min
 }
