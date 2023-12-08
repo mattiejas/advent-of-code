@@ -1,9 +1,9 @@
-pub mod error;
 pub mod coord;
+pub mod error;
+pub mod math;
 
+use log::{debug, error, info, trace};
 use std::fmt;
-use log::{error, debug, trace, info};
-
 
 pub struct Solution {
     input: String,
@@ -15,10 +15,10 @@ impl Solution {
     }
 
     pub fn run<'a, TOutput, TPart>(&'a self, part: &TPart)
-        where
-            TPart: Part<&'a str, TOutput>,
-            TPart: fmt::Debug,
-            TOutput: fmt::Display,
+    where
+        TPart: Part<&'a str, TOutput>,
+        TPart: fmt::Debug,
+        TOutput: fmt::Display,
     {
         debug!("Solving {:?}", part);
 

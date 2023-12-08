@@ -138,7 +138,11 @@ impl Ord for Hand {
 
 impl Hand {
     fn new(cards: [Card; 5], bid: usize) -> Self {
-        let mut hand = Hand { cards, bid, special_hand: None };
+        let mut hand = Hand {
+            cards,
+            bid,
+            special_hand: None,
+        };
         let mut counts = [0; 14];
         let mut joker_count = 0;
 
@@ -206,7 +210,7 @@ KK677 28
 KTJJT 220
 QQQJA 483";
 
-        let hands = parse_input(input).unwrap();
+        let hands = parse_input(input, false).unwrap();
 
         assert_eq!(hands.len(), 5);
         assert_eq!(
