@@ -1,5 +1,5 @@
-use aoc::error::Result;
 use aoc::coord::{BoundingBox, Coord};
+use aoc::error::Result;
 
 #[derive(Debug)]
 struct Part1;
@@ -11,9 +11,7 @@ impl aoc::Part<&str, usize> for Part1 {
     fn solve(&self, input: &str) -> Result<usize> {
         let lines = aoc::split_input(input);
 
-        let sum = sum_nums_surrounding_symbols(&lines, |group, _| {
-            group.iter().sum()
-        })?;
+        let sum = sum_nums_surrounding_symbols(&lines, |group, _| group.iter().sum())?;
 
         Ok(sum as usize)
     }
@@ -78,7 +76,7 @@ fn sum_nums_surrounding_symbols(lines: &[&str], combine: fn(Vec<i32>, char) -> i
     Ok(sum)
 }
 
-fn find_numbers(lines: &[&str]) -> Vec<(i32, Coord)> {
+fn find_numbers(lines: &[&str]) -> Vec<(i32, Coord<i32>)> {
     let mut numbers = Vec::new();
 
     for (y, line) in lines.iter().enumerate() {
@@ -88,20 +86,20 @@ fn find_numbers(lines: &[&str]) -> Vec<(i32, Coord)> {
     numbers
 }
 
-fn find_numbers_in_line(line: &str, y: i32) -> Vec<(i32, Coord)> {
+fn find_numbers_in_line(line: &str, y: i32) -> Vec<(i32, Coord<i32>)> {
     let mut numbers = Vec::new();
 
     let capture = regex::Regex::new(r"\d+").unwrap();
 
     for found_match in capture.find_iter(line) {
         let number = found_match.as_str().parse::<i32>().unwrap();
-        numbers.push((number, Coord::new(found_match.start() as i32, y)));
+        numbers.push((number, Coord::<i32>::new(found_match.start() as i32, y)));
     }
 
     numbers
 }
 
-fn find_special_symbols(lines: &[&str]) -> Vec<(char, Coord)> {
+fn find_special_symbols(lines: &[&str]) -> Vec<(char, Coord<i32>)> {
     let mut symbols = Vec::new();
 
     for (y, line) in lines.iter().enumerate() {
@@ -111,20 +109,25 @@ fn find_special_symbols(lines: &[&str]) -> Vec<(char, Coord)> {
     symbols
 }
 
-fn find_special_symbols_in_line(line: &str, y: i32) -> Vec<(char, Coord)> {
+fn find_special_symbols_in_line(line: &str, y: i32) -> Vec<(char, Coord<i32>)> {
     let mut symbols = Vec::new();
 
     for (x, c) in line.chars().enumerate() {
         match c {
             '.' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => (),
-            _ => symbols.push((c, Coord::new(x as i32, y))),
+            _ => symbols.push((c, Coord::<i32>::new(x as i32, y))),
         }
     }
 
     symbols
 }
 
-fn get_bounding_box_for_number(coord: &Coord, num: i32, max_line_len: usize, max_lines: usize) -> BoundingBox {
+fn get_bounding_box_for_number(
+    coord: &Coord<i32>,
+    num: i32,
+    max_line_len: usize,
+    max_lines: usize,
+) -> BoundingBox<i32> {
     let mut start = coord.clone();
     let mut end = coord.clone();
 
@@ -186,11 +189,11 @@ mod tests {
 
         // Assert
         assert_eq!(symbols.len(), 5);
-        assert_eq!(symbols[0], ('*', Coord::new(3, 0)));
-        assert_eq!(symbols[1], ('#', Coord::new(6, 1)));
-        assert_eq!(symbols[2], ('+', Coord::new(5, 2)));
-        assert_eq!(symbols[3], ('$', Coord::new(3, 3)));
-        assert_eq!(symbols[4], ('*', Coord::new(5, 3)));
+        assert_eq!(symbols[0], ('*', Coord::<i32>::new(3, 0)));
+        assert_eq!(symbols[1], ('#', Coord::<i32>::new(6, 1)));
+        assert_eq!(symbols[2], ('+', Coord::<i32>::new(5, 2)));
+        assert_eq!(symbols[3], ('$', Coord::<i32>::new(3, 3)));
+        assert_eq!(symbols[4], ('*', Coord::<i32>::new(5, 3)));
     }
 
     #[test]
@@ -203,8 +206,8 @@ mod tests {
 
         // Assert
         assert_eq!(numbers.len(), 2);
-        assert_eq!(numbers[0], (123, Coord::new(0, 0)));
-        assert_eq!(numbers[1], (456, Coord::new(6, 0)));
+        assert_eq!(numbers[0], (123, Coord::<i32>::new(0, 0)));
+        assert_eq!(numbers[1], (456, Coord::<i32>::new(6, 0)));
     }
 
     #[test]
@@ -221,16 +224,16 @@ mod tests {
 
         // Assert
         assert_eq!(numbers.len(), 4);
-        assert_eq!(numbers[0], (123, Coord::new(0, 0)));
-        assert_eq!(numbers[1], (456, Coord::new(6, 0)));
-        assert_eq!(numbers[2], (789, Coord::new(3, 1)));
-        assert_eq!(numbers[3], (101, Coord::new(9, 1)));
+        assert_eq!(numbers[0], (123, Coord::<i32>::new(0, 0)));
+        assert_eq!(numbers[1], (456, Coord::<i32>::new(6, 0)));
+        assert_eq!(numbers[2], (789, Coord::<i32>::new(3, 1)));
+        assert_eq!(numbers[3], (101, Coord::<i32>::new(9, 1)));
     }
 
     #[test]
     fn test_bounding_box_for_number() {
         // Arrange
-        let coord = Coord::new(5, 5);
+        let coord = Coord::<i32>::new(5, 5);
         let num = 123;
         let max_line_len = 10;
         let max_lines = 10;
@@ -239,8 +242,8 @@ mod tests {
         let bb = get_bounding_box_for_number(&coord, num, max_line_len, max_lines);
 
         // Assert
-        assert_eq!(bb.start, Coord::new(4, 4));
-        assert_eq!(bb.end, Coord::new(8, 6));
+        assert_eq!(bb.start, Coord::<i32>::new(4, 4));
+        assert_eq!(bb.end, Coord::<i32>::new(8, 6));
     }
 
     #[test]
@@ -261,9 +264,7 @@ mod tests {
         let lines = aoc::split_input(input);
 
         // Act
-        let sum = sum_nums_surrounding_symbols(&lines, |group, _| {
-            group.iter().sum()
-        }).unwrap();
+        let sum = sum_nums_surrounding_symbols(&lines, |group, _| group.iter().sum()).unwrap();
 
         // Assert
         assert_eq!(sum, 4361);

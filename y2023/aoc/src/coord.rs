@@ -1,41 +1,48 @@
+use std::ops::Mul;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Coord {
-    pub x: i32,
-    pub y: i32,
+pub struct Coord<T> {
+    pub x: T,
+    pub y: T,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct BoundingBox {
-    pub start: Coord,
-    pub end: Coord,
+pub struct BoundingBox<T> {
+    pub start: Coord<T>,
+    pub end: Coord<T>,
 }
 
-impl Coord {
-    pub fn new(x: i32, y: i32) -> Self {
+impl<T> Coord<T> {
+    pub fn new(x: T, y: T) -> Self {
         Self { x, y }
     }
 }
 
-impl BoundingBox {
-    pub fn new(start: Coord, end: Coord) -> Self {
+impl<T> BoundingBox<T>
+where
+    T: std::cmp::PartialOrd + std::ops::Sub<Output = T> + Mul<Output = T> + Copy,
+{
+    pub fn new(start: Coord<T>, end: Coord<T>) -> Self {
         Self { start, end }
     }
 
-    pub fn width(&self) -> i32 {
+    pub fn width(&self) -> T {
         self.end.x - self.start.x
     }
 
-    pub fn height(&self) -> i32 {
+    pub fn height(&self) -> T {
         self.end.y - self.start.y
     }
 
-    pub fn area(&self) -> i32 {
+    pub fn area(&self) -> T {
         self.width() * self.height()
     }
 
-    pub fn contains(&self, coord: &Coord) -> bool {
-        coord.x >= self.start.x && coord.x <= self.end.x
-            && coord.y >= self.start.y && coord.y <= self.end.y
+    pub fn contains(&self, coord: &Coord<T>) -> bool {
+        coord.x >= self.start.x
+            && coord.x <= self.end.x
+            && coord.y >= self.start.y
+            && coord.y <= self.end.y
     }
 }
 
