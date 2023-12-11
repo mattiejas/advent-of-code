@@ -1,18 +1,48 @@
 use std::ops::Mul;
 
+type Direction<T> = Coord<T>;
+
+pub const NORTH: Direction<i8> = Direction { x: 0, y: -1 };
+pub const SOUTH: Direction<i8> = Direction { x: 0, y: 1 };
+pub const EAST: Direction<i8> = Direction { x: 1, y: 0 };
+pub const WEST: Direction<i8> = Direction { x: -1, y: 0 };
+
+pub const CARDINAL_DIRECTIONS: [Direction<i8>; 4] = [NORTH, SOUTH, EAST, WEST];
+
+pub const NORTH_EAST: Direction<i8> = Direction { x: 1, y: -1 };
+pub const NORTH_WEST: Direction<i8> = Direction { x: -1, y: -1 };
+pub const SOUTH_EAST: Direction<i8> = Direction { x: 1, y: 1 };
+pub const SOUTH_WEST: Direction<i8> = Direction { x: -1, y: 1 };
+
+pub const INTER_CARDINAL_DIRECTIONS: [Direction<i8>; 4] =
+    [NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST];
+
+pub const ALL_DIRECTIONS: [Direction<i8>; 8] = [
+    NORTH, SOUTH, EAST, WEST, NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST,
+];
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Coord<T> {
+pub struct Coord<T>
+where
+    T: std::ops::Add,
+{
     pub x: T,
     pub y: T,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct BoundingBox<T> {
+pub struct BoundingBox<T>
+where
+    T: std::cmp::PartialOrd + std::ops::Sub<Output = T> + Mul<Output = T> + std::ops::Add,
+{
     pub start: Coord<T>,
     pub end: Coord<T>,
 }
 
-impl<T> Coord<T> {
+impl<T> Coord<T>
+where
+    T: std::ops::Add<Output = T> + Copy,
+{
     pub fn new(x: T, y: T) -> Self {
         Self { x, y }
     }
@@ -20,7 +50,7 @@ impl<T> Coord<T> {
 
 impl<T> BoundingBox<T>
 where
-    T: std::cmp::PartialOrd + std::ops::Sub<Output = T> + Mul<Output = T> + Copy,
+    T: std::cmp::PartialOrd + std::ops::Sub<Output = T> + Mul<Output = T> + std::ops::Add + Copy,
 {
     pub fn new(start: Coord<T>, end: Coord<T>) -> Self {
         Self { start, end }
