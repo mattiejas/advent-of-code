@@ -1,4 +1,4 @@
-use aoc::error::Result;
+use aoc::error::{AocError, Result};
 use itertools::Itertools;
 
 #[derive(Debug)]
@@ -18,12 +18,13 @@ struct Update {
     pages: Vec<usize>,
 }
 
-fn parse_input(input: &str) -> (Vec<Rule>, Vec<Update>) {
+fn parse_input(input: &str) -> Result<(Vec<Rule>, Vec<Update>)> {
     // split on blank line
-    let (rules_str, updates_str) = input.trim().split("\n\n").collect_tuple().unwrap();
+    let lines = input.trim().lines().collect::<Vec<&str>>();
 
-    let rules = rules_str
-        .lines()
+    let rules = lines
+        .iter()
+        .filter(|line| line.contains("|"))
         .map(|line| {
             let (before, after) = line.split("|").collect_tuple().unwrap();
 
@@ -37,8 +38,9 @@ fn parse_input(input: &str) -> (Vec<Rule>, Vec<Update>) {
         })
         .collect();
 
-    let updates = updates_str
-        .lines()
+    let updates = lines
+        .iter()
+        .filter(|line| line.contains(","))
         .map(|line| {
             let pages = line
                 .split(",")
@@ -49,7 +51,7 @@ fn parse_input(input: &str) -> (Vec<Rule>, Vec<Update>) {
         })
         .collect();
 
-    (rules, updates)
+    Ok((rules, updates))
 }
 
 fn is_correct_order(rules: &Vec<Rule>, update: &Update) -> bool {
@@ -70,30 +72,38 @@ fn is_correct_order(rules: &Vec<Rule>, update: &Update) -> bool {
     true
 }
 
-fn fix_update_order(rules: &Vec<Rule>, update: &Update) -> Update {
-    let mut update = update.clone();
+fn ensure_order(rules: &Vec<Rule>, update: &Update) -> Update {
+    let mut new_update = update.clone();
 
-    for rule in rules {
-        // find if the pages are in the update
-        let before_index = update.pages.iter().position(|p| *p == rule.before);
-        let after_index = update.pages.iter().position(|p| *p == rule.after);
+    let mut swapped = true;
 
-        if let (Some(before_index), Some(after_index)) = (before_index, after_index) {
-            if before_index < after_index {
-                continue;
-            } else {
-                // swap the pages
-                update.pages.swap(before_index, after_index);
+    while swapped {
+        swapped = false;
+
+        for i in 0..new_update.pages.len() - 1 {
+            let a = new_update.pages[i];
+            let b = new_update.pages[i + 1];
+
+            for rule in rules {
+                if rule.before == a && rule.after == b {
+                    continue;
+                }
+
+                if rule.before == b && rule.after == a {
+                    new_update.pages.swap(i, i + 1);
+                    swapped = true;
+                    break;
+                }
             }
         }
     }
 
-    update
+    new_update
 }
 
 impl aoc::Part<&str, usize> for Part1 {
     fn solve(&self, input: &str) -> Result<usize> {
-        let (rules, updates) = parse_input(input);
+        let (rules, updates) = parse_input(input)?;
 
         let sum: usize = updates
             .iter()
@@ -107,21 +117,12 @@ impl aoc::Part<&str, usize> for Part1 {
 
 impl aoc::Part<&str, usize> for Part2 {
     fn solve(&self, input: &str) -> Result<usize> {
-        let (rules, updates) = parse_input(input);
+        let (rules, updates) = parse_input(input)?;
 
-        let incorrect_updates = updates
+        let sum = updates
             .iter()
             .filter(|update| !is_correct_order(&rules, update))
-            .collect::<Vec<_>>();
-
-        let fixed_updates = incorrect_updates
-            .iter()
-            .map(|update| fix_update_order(&rules, update))
-            .collect::<Vec<_>>();
-
-        let sum: usize = fixed_updates
-            .iter()
-            .filter(|update| is_correct_order(&rules, update))
+            .map(|update| ensure_order(&rules, update))
             .map(|update| update.pages[update.pages.len() / 2])
             .sum();
 
@@ -180,8 +181,14 @@ mod tests {
 ";
 
     #[test]
-    fn sample_test() {
+    fn part1_test() {
         let part1 = Part1;
         assert_eq!(part1.solve(&SAMPLE).unwrap(), 143);
+    }
+
+    #[test]
+    fn part2_test() {
+        let part2 = Part2;
+        assert_eq!(part2.solve(&SAMPLE).unwrap(), 123);
     }
 }
