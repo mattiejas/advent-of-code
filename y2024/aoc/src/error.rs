@@ -8,6 +8,7 @@ pub type Result<T> = std::result::Result<T, AocError>;
 pub enum AocError {
     ParseError(String),
     RegexError(regex::Error),
+    ComputeError(String),
 }
 
 impl fmt::Display for AocError {
@@ -15,6 +16,7 @@ impl fmt::Display for AocError {
         match *self {
             AocError::ParseError(ref message) => write!(f, "Parse error: {}", message),
             AocError::RegexError(ref err) => write!(f, "Regex error: {}", err),
+            AocError::ComputeError(ref err) => write!(f, "Compute error: {}", err),
         }
     }
 }
@@ -24,6 +26,7 @@ impl Error for AocError {
         match *self {
             AocError::ParseError(ref _message) => None,
             AocError::RegexError(ref err) => Some(err),
+            AocError::ComputeError(ref _err) => None,
         }
     }
 }
