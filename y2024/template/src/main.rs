@@ -1,4 +1,4 @@
-use aoc::error::{Result};
+use aoc::error::Result;
 
 #[derive(Debug)]
 struct Part1;
@@ -35,8 +35,17 @@ fn main() {
 mod tests {
     use super::*;
 
+    const SAMPLE: &str = r#"
+INSERT_SAMPLE_HERE
+"#;
+
     #[test]
-    fn sample_test() {
+    fn part1_sample_test() {
+        assert_eq!(1, 1);
+    }
+
+    #[test]
+    fn part2_sample_test() {
         assert_eq!(1, 1);
     }
 }

@@ -24,7 +24,7 @@ pub const ALL_DIRECTIONS: [Direction<i8>; 8] = [
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Coord<T>
 where
-    T: std::ops::Add,
+    T: std::ops::Add + std::ops::Sub,
 {
     pub x: T,
     pub y: T,
@@ -41,10 +41,51 @@ where
 
 impl<T> Coord<T>
 where
-    T: std::ops::Add<Output = T> + Copy,
+    T: std::ops::Add<Output = T> + Copy + std::ops::Sub<Output = T>,
 {
     pub fn new(x: T, y: T) -> Self {
         Self { x, y }
+    }
+
+    pub fn direction_to(&self, other: &Coord<T>) -> Direction<T> {
+        let x = other.x - self.x;
+        let y = other.y - self.y;
+
+        Direction { x, y }
+    }
+
+    pub fn sub(&self, other: Coord<T>) -> Coord<T> {
+        Coord {
+            x: self.x - other.x,
+            y: self.y - other.y,
+        }
+    }
+
+    pub fn add(&self, other: Coord<T>) -> Coord<T> {
+        Coord {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+
+pub fn sub<T>(a: Coord<T>, b: Coord<T>) -> Coord<T>
+where
+    T: std::ops::Sub<Output = T> + std::ops::Add + Copy,
+{
+    Coord {
+        x: a.x - b.x,
+        y: a.y - b.y,
+    }
+}
+
+pub fn add<T>(a: Coord<T>, b: Coord<T>) -> Coord<T>
+where
+    T: std::ops::Sub<Output = T> + std::ops::Add<Output = T> + Copy,
+{
+    Coord {
+        x: a.x + b.x,
+        y: a.y + b.y,
     }
 }
 
