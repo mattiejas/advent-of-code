@@ -1,4 +1,4 @@
-use std::fs::File;
+use std::{fs::File, iter::Skip};
 
 use aoc::error::{AocError, Result};
 use itertools::Itertools;
@@ -15,10 +15,17 @@ enum BlockType {
     File(FileID),
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum BlockTypeChunk {
+    FreeSpace(usize),
+    File(FileID, usize),
+}
+
 type FileID = usize;
 
 struct FileStructure {
     disk_map: Vec<BlockType>,
+    disk_map_chunks: Vec<BlockTypeChunk>,
 }
 
 impl FileStructure {
@@ -40,7 +47,35 @@ impl FileStructure {
             .flatten()
             .collect();
 
-        Self { disk_map: data }
+        let data_chunked = data.iter().fold(vec![], |mut acc, block| {
+            match block {
+                BlockType::FreeSpace() => {
+                    if let Some(BlockTypeChunk::FreeSpace(len)) = acc.last_mut() {
+                        *len += 1;
+                    } else {
+                        acc.push(BlockTypeChunk::FreeSpace(1));
+                    }
+                }
+                BlockType::File(id) => {
+                    if let Some(BlockTypeChunk::File(file_id, len)) = acc.last_mut() {
+                        if *file_id == *id {
+                            *len += 1;
+                        } else {
+                            acc.push(BlockTypeChunk::File(*id, 1));
+                        }
+                    } else {
+                        acc.push(BlockTypeChunk::File(*id, 1));
+                    }
+                }
+            }
+
+            acc
+        });
+
+        Self {
+            disk_map: data,
+            disk_map_chunks: data_chunked,
+        }
     }
 
     fn stabilize(&mut self) {
@@ -63,75 +98,44 @@ impl FileStructure {
         }
     }
 
-    fn stabilize_blocks(&mut self) -> Result<()> {
-        let mut is_running = true;
-        let mut last_index = 0;
-        let mut steps = 0;
+    fn stabilize_chunks(&mut self) -> Result<()> {
+        let mut index = 0;
 
-        while steps < 1000 && is_running {
-            println!("last_index: {}", last_index);
-            // find the first free block
-            let free_idx = self
-                .disk_map
-                .iter()
-                .skip(last_index)
-                .position(|block| match block {
-                    BlockType::FreeSpace() => true,
-                    _ => false,
-                })
-                .ok_or(AocError::ComputeError("No free block found".to_owned()))?
-                + last_index;
+        while index < self.disk_map_chunks.len() {
+            let chunk = self.disk_map_chunks[index];
+            if let BlockTypeChunk::FreeSpace(len) = chunk {
+                let mut free_len = len;
 
-            // get the length of the free block
-            let free_len = self
-                .disk_map
-                .iter()
-                .skip(free_idx)
-                .take_while(|block| match block {
-                    BlockType::FreeSpace() => true,
-                    _ => false,
-                })
-                .count();
-
-            let mut file_ids = (0..self.disk_map.len())
-                .map(|idx| match self.disk_map[idx] {
-                    BlockType::File(id) => Some(id),
-                    _ => None,
-                })
-                .filter(|id| id.is_some())
-                .map(|id| id.unwrap())
-                .chunk_by(|id| *id)
-                .into_iter()
-                .map(|(id, chunk)| (id, chunk.count()))
-                .collect::<Vec<(FileID, usize)>>();
-
-            file_ids.reverse();
-
-            // find first file block that can fit in the free block
-            let block = file_ids.iter().find(|(_, len)| *len <= free_len);
-
-            // get the positions of the file block
-            if let Some((id, len)) = block {
-                let start_index = self
-                    .disk_map
+                // find a file chunk that can fit the free space, starting from the end
+                let file = self
+                    .disk_map_chunks
                     .iter()
-                    .position(|block| match block {
-                        BlockType::File(file_id) => *file_id == *id,
-                        _ => false,
-                    })
-                    .ok_or(AocError::ComputeError("No file block found".to_owned()))?;
+                    .copied()
+                    .enumerate()
+                    .skip(index)
+                    .rev()
+                    .find(|(idx, block)| {
+                        if let BlockTypeChunk::File(_, len) = block {
+                            if *len <= free_len {
+                                return true;
+                            }
+                        }
 
-                println!("start_index: {}", start_index);
+                        false
+                    });
 
-                // move the file block to the free block
-                for idx in 0..*len {
-                    self.disk_map[free_idx + idx] = BlockType::File(*id);
-                    self.disk_map[start_index + idx] = BlockType::FreeSpace();
+                if let Some((file_idx, BlockTypeChunk::File(id, len))) = file {
+                    self.disk_map_chunks.swap(index, file_idx);
+
+                    if len < free_len {
+                        self.disk_map_chunks[file_idx] = BlockTypeChunk::FreeSpace(len);
+                        self.disk_map_chunks
+                            .insert(index + 1, BlockTypeChunk::FreeSpace(free_len - len));
+                    }
                 }
             }
 
-            last_index = free_idx + free_len;
-            steps += 1;
+            index += 1;
         }
 
         Ok(())
@@ -148,6 +152,28 @@ impl FileStructure {
             .sum()
     }
 
+    fn expand_chunks(&self) -> Vec<BlockType> {
+        self.disk_map_chunks
+            .iter()
+            .map(|block| match block {
+                BlockTypeChunk::FreeSpace(len) => vec![BlockType::FreeSpace(); *len],
+                BlockTypeChunk::File(id, len) => vec![BlockType::File(*id); *len],
+            })
+            .flatten()
+            .collect_vec()
+    }
+
+    fn checksum_chunks(&self) -> usize {
+        self.expand_chunks()
+            .iter()
+            .enumerate()
+            .map(|(idx, block)| match block {
+                BlockType::File(id) => idx * id,
+                _ => 0,
+            })
+            .sum()
+    }
+
     fn print(&self) {
         for block in &self.disk_map {
             match block {
@@ -155,7 +181,16 @@ impl FileStructure {
                 BlockType::File(id) => print!("[{}]", id),
             }
         }
-        println!();
+        println!("\n\n");
+    }
+
+    fn print_chunks(&self) {
+        for block in self.expand_chunks() {
+            match block {
+                BlockType::FreeSpace() => print!("_"),
+                BlockType::File(id) => print!("[{}]", id),
+            }
+        }
     }
 }
 
@@ -174,8 +209,8 @@ impl aoc::Part<&str, usize> for Part2 {
     fn solve(&self, input: &str) -> Result<usize> {
         let mut fs = FileStructure::new(input);
 
-        fs.stabilize_blocks();
-        let checksum = fs.checksum();
+        fs.stabilize_chunks();
+        let checksum = fs.checksum_chunks();
 
         Ok(checksum)
     }
