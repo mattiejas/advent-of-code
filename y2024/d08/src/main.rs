@@ -63,6 +63,9 @@ fn find_antinotes_in_line(
         let mut antinode_a = a.sub(direction);
         let mut antinode_b = b.add(direction);
 
+        antinotes.push(*a);
+        antinotes.push(*b);
+
         while within_bounds(antinode_a, min, max) {
             antinotes.push(antinode_a);
             antinode_a = antinode_a.sub(direction);
