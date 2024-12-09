@@ -46,6 +46,37 @@ fn find_antinotes(frequency: &str, nodes: &[Coord<i64>]) -> Vec<Coord<i64>> {
     antinotes
 }
 
+fn find_antinotes_in_line(
+    frequency: &str,
+    nodes: &[Coord<i64>],
+    min: Coord<i64>,
+    max: Coord<i64>,
+) -> Vec<Coord<i64>> {
+    let mut antinotes = Vec::new();
+
+    for n in nodes.iter().combinations(2) {
+        let a = n[0];
+        let b = n[1];
+        let direction = a.direction_to(b);
+
+        // find the antinodes within the bounds that fall on the line with the same slope
+        let mut antinode_a = a.sub(direction);
+        let mut antinode_b = b.add(direction);
+
+        while within_bounds(antinode_a, min, max) {
+            antinotes.push(antinode_a);
+            antinode_a = antinode_a.sub(direction);
+        }
+
+        while within_bounds(antinode_b, min, max) {
+            antinotes.push(antinode_b);
+            antinode_b = antinode_b.add(direction);
+        }
+    }
+
+    antinotes
+}
+
 impl aoc::Part<&str, usize> for Part1 {
     fn solve(&self, input: &str) -> Result<usize> {
         let map = parse(input);
@@ -92,14 +123,14 @@ fn draw(
     // draw the character of the frequency, and # for antinodes
     let mut grid = vec![vec!['.'; (max.x - min.x) as usize]; (max.y - min.y) as usize];
 
+    for antinode in antinodes {
+        grid[antinode.y as usize][antinode.x as usize] = '#';
+    }
+
     for (frequency, nodes) in map.iter() {
         for node in nodes {
             grid[node.y as usize][node.x as usize] = frequency.chars().next().unwrap();
         }
-    }
-
-    for antinode in antinodes {
-        grid[antinode.y as usize][antinode.x as usize] = '#';
     }
 
     grid.iter()
@@ -109,7 +140,27 @@ fn draw(
 
 impl aoc::Part<&str, usize> for Part2 {
     fn solve(&self, input: &str) -> Result<usize> {
-        Ok(0)
+        let map = parse(input);
+        let (min, max) = find_bounds(input);
+
+        let mut antinotes: Vec<Coord<i64>> = Vec::new();
+
+        for (frequency, nodes) in map.iter() {
+            antinotes.extend(
+                find_antinotes_in_line(frequency, nodes, min, max)
+                    .iter()
+                    .filter(|a| within_bounds(**a, min, max))
+                    .copied()
+                    .collect::<Vec<Coord<i64>>>(),
+            );
+        }
+
+        // get unique antinotes
+        let antinotes = antinotes.into_iter().unique().collect::<Vec<Coord<i64>>>();
+
+        println!("{}", draw(&map, &antinotes, min, max));
+
+        Ok(antinotes.len())
     }
 }
 
@@ -152,5 +203,12 @@ mod tests {
         let part1 = Part1;
 
         assert_eq!(part1.solve(SAMPLE).unwrap(), 14);
+    }
+
+    #[test]
+    fn sample_test_part2() {
+        let part2 = Part2;
+
+        assert_eq!(part2.solve(SAMPLE).unwrap(), 34);
     }
 }
