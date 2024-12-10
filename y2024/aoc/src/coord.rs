@@ -1,6 +1,6 @@
-use std::ops::Mul;
+use std::ops::{self, Mul};
 
-type Direction<T> = Coord<T>;
+pub type Direction<T> = Coord<T>;
 
 pub const NORTH: Direction<i8> = Direction { x: 0, y: -1 };
 pub const SOUTH: Direction<i8> = Direction { x: 0, y: 1 };
@@ -28,6 +28,21 @@ where
 {
     pub x: T,
     pub y: T,
+}
+
+impl From<(i32, i32)> for Coord<i32> {
+    fn from((x, y): (i32, i32)) -> Self {
+        Self { x, y }
+    }
+}
+
+impl From<Coord<i8>> for Coord<i32> {
+    fn from(coord: Coord<i8>) -> Self {
+        Self {
+            x: coord.x as i32,
+            y: coord.y as i32,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -62,6 +77,17 @@ where
     }
 
     pub fn add(&self, other: Coord<T>) -> Coord<T> {
+        Coord {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+
+impl ops::Add for Coord<i32> {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
         Coord {
             x: self.x + other.x,
             y: self.y + other.y,
