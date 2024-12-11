@@ -16,13 +16,17 @@ fn parse_stones(input: &str) -> Vec<u128> {
         .collect()
 }
 
+fn insert_or_update(map: &mut HashMap<u128, usize>, key: u128, value: usize) {
+    map.entry(key).and_modify(|v| *v += value).or_insert(value);
+}
+
 fn update_stones(initial_stones: HashMap<u128, usize>) -> HashMap<u128, usize> {
     let mut stones = HashMap::with_capacity(initial_stones.len());
 
     for (stone, count) in initial_stones {
         match stone {
             0 => {
-                stones.entry(1).and_modify(|c| *c += count).or_insert(count);
+                insert_or_update(&mut stones, 1, count);
             }
             stone if stone.to_string().len() % 2 == 0 => {
                 let str = stone.to_string();
@@ -34,23 +38,14 @@ fn update_stones(initial_stones: HashMap<u128, usize>) -> HashMap<u128, usize> {
                     .collect::<String>()
                     .parse()
                     .unwrap();
+
                 let second_half = chars.collect::<String>().parse().unwrap();
 
-                stones
-                    .entry(first_half)
-                    .and_modify(|c| *c += count)
-                    .or_insert(count);
-
-                stones
-                    .entry(second_half)
-                    .and_modify(|c| *c += count)
-                    .or_insert(count);
+                insert_or_update(&mut stones, first_half, count);
+                insert_or_update(&mut stones, second_half, count);
             }
             stone => {
-                stones
-                    .entry(stone * 2024)
-                    .and_modify(|c| *c += count)
-                    .or_insert(count);
+                insert_or_update(&mut stones, stone * 2024, count);
             }
         }
     }
