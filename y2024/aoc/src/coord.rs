@@ -2,26 +2,26 @@ use std::ops::{self, Mul};
 
 pub type Direction<T> = Coord<T>;
 
-pub const NORTH: Direction<i8> = Direction { x: 0, y: -1 };
-pub const SOUTH: Direction<i8> = Direction { x: 0, y: 1 };
-pub const EAST: Direction<i8> = Direction { x: 1, y: 0 };
-pub const WEST: Direction<i8> = Direction { x: -1, y: 0 };
+pub const NORTH: Direction<i32> = Direction { x: 0, y: -1 };
+pub const SOUTH: Direction<i32> = Direction { x: 0, y: 1 };
+pub const EAST: Direction<i32> = Direction { x: 1, y: 0 };
+pub const WEST: Direction<i32> = Direction { x: -1, y: 0 };
 
-pub const CARDINAL_DIRECTIONS: [Direction<i8>; 4] = [NORTH, SOUTH, EAST, WEST];
+pub const CARDINAL_DIRECTIONS: [Direction<i32>; 4] = [NORTH, SOUTH, EAST, WEST];
 
-pub const NORTH_EAST: Direction<i8> = Direction { x: 1, y: -1 };
-pub const NORTH_WEST: Direction<i8> = Direction { x: -1, y: -1 };
-pub const SOUTH_EAST: Direction<i8> = Direction { x: 1, y: 1 };
-pub const SOUTH_WEST: Direction<i8> = Direction { x: -1, y: 1 };
+pub const NORTH_EAST: Direction<i32> = Direction { x: 1, y: -1 };
+pub const NORTH_WEST: Direction<i32> = Direction { x: -1, y: -1 };
+pub const SOUTH_EAST: Direction<i32> = Direction { x: 1, y: 1 };
+pub const SOUTH_WEST: Direction<i32> = Direction { x: -1, y: 1 };
 
-pub const INTER_CARDINAL_DIRECTIONS: [Direction<i8>; 4] =
+pub const INTER_CARDINAL_DIRECTIONS: [Direction<i32>; 4] =
     [NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST];
 
-pub const ALL_DIRECTIONS: [Direction<i8>; 8] = [
+pub const ALL_DIRECTIONS: [Direction<i32>; 8] = [
     NORTH, SOUTH, EAST, WEST, NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST,
 ];
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Coord<T>
 where
     T: std::ops::Add + std::ops::Sub,
