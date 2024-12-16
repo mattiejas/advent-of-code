@@ -10,11 +10,12 @@ struct Part1;
 #[derive(Debug)]
 struct Part2;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum TileType {
     Empty,
     Wall,
     Box,
+    BoxRight,
 }
 
 #[derive(Debug, Clone)]
@@ -31,6 +32,7 @@ struct Robot {
 }
 
 fn parse(input: &str) -> (Map, Robot) {
+    println!("{}", input.trim());
     let (map_str, moves_str) = input.trim().split("\n\n").collect_tuple().unwrap();
 
     let width = map_str.lines().next().unwrap().len();
@@ -94,14 +96,14 @@ impl Map {
         }
     }
 
-    fn box_find_next_wall_or_empty(
-        &self,
-        x: i32,
-        y: i32,
-        direction: Direction<i32>,
-    ) -> (TileType, Coord<i32>) {
+    fn box_move(&mut self, x: i32, y: i32, direction: Direction<i32>) -> bool {
+        let first_box = Coord::new(x, y);
+
         let mut x = x;
         let mut y = y;
+
+        let mut boxes = Vec::new();
+        boxes.push(first_box);
 
         loop {
             x += direction.x;
@@ -110,22 +112,71 @@ impl Map {
             let tile = self.get_tile(x, y);
 
             match tile {
-                TileType::Wall => return (TileType::Wall, Coord::new(x, y)),
-                TileType::Box => continue,
-                TileType::Empty => return (TileType::Empty, Coord::new(x, y)),
+                TileType::Wall => return false,
+                TileType::Box | TileType::BoxRight => {
+                    boxes.push(Coord::new(x, y));
+                }
+                TileType::Empty => {
+                    for i in (0..boxes.len()).rev() {
+                        let curr = boxes[i];
+                        let next = curr.add(direction);
+
+                        self.tiles.swap(
+                            (curr.y * self.width as i32 + curr.x) as usize,
+                            (next.y * self.width as i32 + next.x) as usize,
+                        );
+                    }
+
+                    return true;
+                }
             }
         }
     }
 
-    fn box_move(&mut self, x: i32, y: i32, direction: Direction<i32>) {
-        let (next_type, next_position) = self.box_find_next_wall_or_empty(x, y, direction);
+    fn can_box_move_recursive(
+        &mut self,
+        x: i32,
+        y: i32,
+        direction: Direction<i32>,
+        boxes: &mut Vec<Coord<i32>>,
+    ) -> bool {
+        let left = Coord::new(x + direction.x, y + direction.y);
+        let right = Coord::new(left.x + 1, left.y);
 
-        match next_type {
-            TileType::Empty => loop {
-                let x = x + direction.x;
-                let y = y + direction.y;
-            },
+        if boxes.contains(&left) {
+            return true;
         }
+
+        if match (
+            self.get_tile(left.x, left.y),
+            self.get_tile(right.x, right.y),
+        ) {
+            (TileType::Empty, TileType::Empty) => true,
+            (TileType::Wall, _) | (_, TileType::Wall) => false,
+            (TileType::Box, _) => self.can_box_move_recursive(left.x, left.y, direction, boxes),
+            (TileType::Empty, TileType::Box) => {
+                self.can_box_move_recursive(right.x, right.y, direction, boxes)
+            }
+            (TileType::BoxRight, TileType::Empty) => {
+                self.can_box_move_recursive(left.x - 1, left.y, direction, boxes)
+            }
+            (TileType::BoxRight, TileType::Box) => {
+                self.can_box_move_recursive(left.x - 1, left.y, direction, boxes)
+                    && self.can_box_move_recursive(right.x, right.y, direction, boxes)
+            }
+            (a, b) => {
+                self.draw(&Robot {
+                    position: Coord::new(x, y),
+                    moves: vec![direction],
+                });
+                unreachable!("Invalid tile combination: {:?}, {:?}", a, b)
+            }
+        } {
+            boxes.push(left);
+            return true;
+        }
+
+        false
     }
 
     fn simulate(&mut self, robot: &mut Robot) {
@@ -137,14 +188,49 @@ impl Map {
                 TileType::Empty => {
                     robot.position = next_position;
                 }
-                TileType::Box => {
-                    let (next_type, next_position) = self.box_find_next_wall_or_empty(
-                        next_position.x,
-                        next_position.y,
-                        *direction,
+                TileType::Box | TileType::BoxRight => {
+                    if direction.y == 0 {
+                        // horizontal
+                        if self.box_move(next_position.x, next_position.y, *direction) {
+                            robot.position = next_position;
+                        }
+
+                        continue;
+                    }
+
+                    // vertical
+                    let mut boxes = Vec::new();
+                    let left = if next_tile == TileType::Box {
+                        Coord::new(next_position.x, next_position.y)
+                    } else {
+                        Coord::new(next_position.x - 1, next_position.y)
+                    };
+
+                    println!(
+                        "Left: {:?}, tile: {:?}",
+                        left,
+                        self.get_tile(left.x, left.y)
                     );
 
-                    if next_type == TileType::Empty {
+                    if self.can_box_move_recursive(left.x, left.y, *direction, &mut boxes) {
+                        println!("Can move boxes: {:?}", boxes);
+                        // move boxes
+                        for i in (0..boxes.len()).rev() {
+                            let curr = boxes[i];
+                            let next = curr.add(*direction);
+
+                            self.tiles.swap(
+                                (curr.y * self.width as i32 + curr.x) as usize,
+                                (next.y * self.width as i32 + next.x) as usize,
+                            );
+
+                            // move the box to the right
+                            self.tiles.swap(
+                                (curr.y * self.width as i32 + (curr.x + 1)) as usize,
+                                (next.y * self.width as i32 + (next.x + 1)) as usize,
+                            );
+                        }
+
                         robot.position = next_position;
                     }
                 }
@@ -182,7 +268,8 @@ impl Map {
                     match tile {
                         TileType::Empty => print!("."),
                         TileType::Wall => print!("#"),
-                        TileType::Box => print!("O"),
+                        TileType::Box => print!("["),
+                        TileType::BoxRight => print!("]"),
                     }
                 }
             }
@@ -190,12 +277,50 @@ impl Map {
             println!();
         }
     }
+
+    fn extend_width(&mut self, robot: &mut Robot) {
+        let new_width = self.width * 2;
+
+        let mut new_tiles = vec![TileType::Empty; new_width * self.height];
+
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let tile = self.get_tile(x as i32, y as i32);
+
+                match tile {
+                    TileType::Empty => {
+                        // set x and x + 1 to empty
+                        new_tiles[(y * new_width + (x * 2)) as usize] = tile;
+                        new_tiles[(y * new_width + (x * 2 + 1)) as usize] = tile;
+                    }
+                    TileType::Wall => {
+                        // set x and x + 1 to wall
+                        new_tiles[(y * new_width + (x * 2)) as usize] = tile;
+                        new_tiles[(y * new_width + (x * 2 + 1)) as usize] = tile;
+                    }
+                    TileType::Box => {
+                        // set x to box and x + 1 to empty
+                        new_tiles[(y * new_width + (x * 2)) as usize] = TileType::Box;
+                        new_tiles[(y * new_width + (x * 2 + 1)) as usize] = TileType::BoxRight;
+                    }
+                    TileType::BoxRight => unreachable!("BoxRight should not be in the map"),
+                }
+            }
+        }
+
+        self.width = new_width;
+        self.tiles = new_tiles;
+
+        robot.position.x *= 2;
+    }
 }
 
 impl aoc::Part<&str, usize> for Part1 {
     fn solve(&self, input: &str) -> Result<usize> {
         let (mut map, mut robot) = parse(input);
 
+        map.extend_width(&mut robot);
+        map.draw(&robot);
         map.simulate(&mut robot);
         map.draw(&robot);
 
@@ -205,7 +330,14 @@ impl aoc::Part<&str, usize> for Part1 {
 
 impl aoc::Part<&str, usize> for Part2 {
     fn solve(&self, input: &str) -> Result<usize> {
-        Ok(0)
+        let (mut map, mut robot) = parse(input);
+
+        map.extend_width(&mut robot);
+        map.draw(&robot);
+        map.simulate(&mut robot);
+        map.draw(&robot);
+
+        Ok(map.score())
     }
 }
 
@@ -264,6 +396,11 @@ v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^
 
     #[test]
     fn part2_sample_test() {
-        assert_eq!(1, 1);
+        let part = Part2;
+        let expected = 9021;
+
+        let result = part.solve(SAMPLE).unwrap();
+
+        assert_eq!(result, expected);
     }
 }
