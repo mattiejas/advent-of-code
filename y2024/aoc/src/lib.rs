@@ -1,4 +1,5 @@
 pub mod coord;
+pub mod ecs;
 pub mod error;
 pub mod math;
 
